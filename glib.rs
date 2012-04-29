@@ -15,7 +15,7 @@ enum event_source = u32;
 mod timeout {
   mod raw {
     import glib::types::*;
-    fn pack_closure<T>(func: fn@(@T)->bool, data: @T) -> gpointer unsafe {
+    fn pack_closure<T>(func: fn@(@mut T)->bool, data: @mut T) -> gpointer unsafe {
       let c = fn@() -> bool {
         ret func(data);
       };
@@ -26,10 +26,16 @@ mod timeout {
     }
     crust fn c_callback(data: gpointer) -> gboolean unsafe {
       let p: @fn@()->bool = unsafe::reinterpret_cast(data);
-      ret gboolean::from_bool((*p)());
+      let r = (*p)();
+      if (r) {
+        // The callback is going to be executed again, so save it.
+        unsafe::forget(p);
+      }
+      ret gboolean::from_bool(r);
     }
   }
-  fn add<T>(interval: u32, func: fn@(@T)->bool, data: @T) -> event_source unsafe {
+  fn add<T>(interval: u32, func: fn@(@mut T)->bool, data: @mut T)
+    -> event_source unsafe {
     ret event_source(
         nat::g_timeout_add(
           interval,
