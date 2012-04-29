@@ -10,20 +10,31 @@ mod priority {
   const low: int = 300;
 }
 
-enum event_source = uint;
+enum event_source = u32;
 
 mod timeout {
-  fn add<T>(interval: uint, func: fn(*T)->bool, data: *T) {
-    /**
-     * TODO:
-     * We can't make a crust closure. So define one crust function for each callback
-     * type that uses the data slot to receive the actual callback and the actual
-     * data.
-     */
-    crust fn callback(data: glib::types::gpointer) -> glib::types::gboolean unsafe {
-      ret func(unsafe::reinterpret_cast<glib::types::gpointer, *T>(data));
+  mod raw {
+    import glib::types::*;
+    fn pack_closure<T>(func: fn@(@T)->bool, data: @T) -> gpointer unsafe {
+      let c = fn@() -> bool {
+        ret func(data);
+      };
+      let p = @c;
+      let d: gpointer = unsafe::reinterpret_cast(p);
+      unsafe::forget(p);
+      ret d;
     }
-    ret event_source(nat::g_timeout_add(interval, callback, data));
+    crust fn c_callback(data: gpointer) -> gboolean unsafe {
+      let p: @fn@()->bool = unsafe::reinterpret_cast(data);
+      ret gboolean::from_bool((*p)());
+    }
+  }
+  fn add<T>(interval: u32, func: fn@(@T)->bool, data: @T) -> event_source unsafe {
+    ret event_source(
+        nat::g_timeout_add(
+          interval,
+          unsafe::reinterpret_cast(raw::c_callback),
+          raw::pack_closure(func, data)));
   }
 }
 
@@ -45,6 +56,12 @@ native mod nat {
 }
 
 mod types {
+
+  mod gboolean {
+    fn from_bool(b: bool) -> gboolean {
+      ret if b { 1i32 } else { 0i32 };
+    }
+  }
 
   type gboolean = gint;
   type gpointer = *c_void;
