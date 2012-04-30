@@ -12,19 +12,28 @@ mod priority {
 
 enum event_source = u32;
 
-mod timeout {
+mod cb {
+  import glib::types::*;
+
+  fn pack_closure<T, U>(func: fn@(@mut T)->U, data: @mut T) -> gpointer unsafe {
+    let c = fn@() -> U {
+      ret func(data);
+    };
+    let p = @c;
+    let d: gpointer = unsafe::reinterpret_cast(p);
+    unsafe::forget(p);
+    ret d;
+  }
+
+  type source_func<T> = fn@(@mut T)->bool;
+
+  fn source_func() -> gpointer unsafe {
+    ret unsafe::reinterpret_cast(raw::source_func);
+  }
+
   mod raw {
-    import glib::types::*;
-    fn pack_closure<T>(func: fn@(@mut T)->bool, data: @mut T) -> gpointer unsafe {
-      let c = fn@() -> bool {
-        ret func(data);
-      };
-      let p = @c;
-      let d: gpointer = unsafe::reinterpret_cast(p);
-      unsafe::forget(p);
-      ret d;
-    }
-    crust fn c_callback(data: gpointer) -> gboolean unsafe {
+
+    crust fn source_func(data: gpointer) -> gboolean unsafe {
       let p: @fn@()->bool = unsafe::reinterpret_cast(data);
       let r = (*p)();
       if (r) {
@@ -33,15 +42,77 @@ mod timeout {
       }
       ret gboolean::from_bool(r);
     }
+
   }
-  fn add<T>(interval: u32, func: fn@(@mut T)->bool, data: @mut T)
-    -> event_source unsafe {
+}
+
+mod idle {
+
+  fn add<T>(func: cb::source_func<T>, data: @mut T) -> event_source {
+    ret event_source(nat::g_idle_add(cb::source_func(), cb::pack_closure(func, data)));
+  }
+
+  fn add_full<T>(priority: i32, func: cb::source_func<T>, data: @mut T)
+    -> event_source {
+      ret event_source(
+          nat::g_idle_add_full(
+            priority,
+            cb::source_func(),
+            cb::pack_closure(func, data),
+            ptr::null()));
+    }
+
+}
+
+mod timeout {
+
+  fn add<T>(interval: u32, func: cb::source_func<T>, data: @mut T)
+    -> event_source {
     ret event_source(
         nat::g_timeout_add(
           interval,
-          unsafe::reinterpret_cast(raw::c_callback),
-          raw::pack_closure(func, data)));
+          cb::source_func(),
+          cb::pack_closure(func, data)));
   }
+
+  fn add_full<T>(
+      priority: i32,
+      interval: u32,
+      func: cb::source_func<T>,
+      data: @mut T)
+    -> event_source {
+      ret event_source(
+          nat::g_timeout_add_full(
+            priority,
+            interval,
+            cb::source_func(),
+            cb::pack_closure(func, data),
+            ptr::null()));
+    }
+
+  fn add_seconds<T>(interval: u32, func: cb::source_func<T>, data: @mut T)
+    -> event_source {
+    ret event_source(
+        nat::g_timeout_add_seconds(
+          interval,
+          cb::source_func(),
+          cb::pack_closure(func, data)));
+  }
+
+  fn add_seconds_full<T>(
+      priority: i32,
+      interval: u32,
+      func: cb::source_func<T>,
+      data: @mut T)
+    -> event_source {
+      ret event_source(
+          nat::g_timeout_add_seconds_full(
+            priority,
+            interval,
+            cb::source_func(),
+            cb::pack_closure(func, data),
+            ptr::null()));
+    }
 }
 
 fn check_version(major: u32, minor: u32, micro: u32) {
@@ -59,6 +130,24 @@ native mod nat {
   import types::*;
   fn glib_check_version(major: guint, minor: guint, micro: guint) -> *gchar;
   fn g_timeout_add(interval: guint, func: gpointer, data: gpointer) -> guint;
+  fn g_timeout_add_full(
+      priority: gint,
+      interval: guint,
+      func: gpointer,
+      data: gpointer,
+      on_destroy: gpointer)
+    -> guint;
+  fn g_timeout_add_seconds(interval: guint, func: gpointer, data: gpointer) -> guint;
+  fn g_timeout_add_seconds_full(
+      priority: gint,
+      interval: guint,
+      func: gpointer,
+      data: gpointer,
+      on_destroy: gpointer)
+    -> guint;
+  fn g_idle_add(func: gpointer, data: gpointer) -> guint;
+  fn g_idle_add_full(
+      priority: gint, func: gpointer, data: gpointer, on_destroy: gpointer) -> guint;
 }
 
 mod types {
