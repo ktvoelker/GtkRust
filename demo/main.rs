@@ -1,4 +1,7 @@
 
+use gtk2;
+import gtk2::*;
+
 import io::*;
 
 fn main(args : [str]) {
