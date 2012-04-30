@@ -1,16 +1,18 @@
 
-RUSTC_REL=/opt/rust-0.2
-RUSTC_HEAD=/opt/rust-HEAD
-RUSTC_ROOT=$(RUSTC_HEAD)
-RUSTC=$(RUSTC_ROOT)/bin/rustc
+RUSTC=rustc
+RUSTDOC=rustdoc
+RUSTDOC_OPTS=--output-dir . --output-format markdown --output-style doc-per-crate
 
-.PHONY: all gtk clean
+.PHONY: all doc gtk clean
 
-all: gtk
+all: gtk doc
 
 gtk:
 	$(RUSTC) gtk.rc
 
+doc:
+	$(RUSTDOC) $(RUSTDOC_OPTS) gtk.rc
+
 clean:
-	-rm *.o gtk
+	-rm *.o gtk gtk.md
 
