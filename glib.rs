@@ -1,6 +1,5 @@
 
 import libc::*;
-import io::writer_util;
 
 mod priority {
   const high: int = -100;
@@ -120,9 +119,39 @@ fn check_version(major: u32, minor: u32, micro: u32) {
   if err_str == ptr::null() {
     ret;
   } else unsafe {
-    io::stderr().write_line(str::unsafe::from_c_str(err_str));
+    log(error, str::unsafe::from_c_str(err_str));
     fail;
   }
+}
+
+mod signal {
+  import types::*;
+
+  enum timing {
+    before,
+    after
+  }
+
+  enum handler_id = gulong;
+
+  fn connect (
+      obj: gobject::object,
+      name: str,
+      callback: gpointer,
+      data: gpointer,
+      when: timing) -> handler_id {
+    ret handler_id(
+          str::as_c_str(name, {|c_name|
+            nat::g_signal_connect_data(
+              obj.c_object(),
+              c_name,
+              callback,
+              data,
+              ptr::null(),
+              if (when == before) { 0i32 } else { 1i32 } /* typed as GConnectFlags */)
+          }));
+  }
+
 }
 
 #[link_name = "glib-2.0"]
@@ -148,6 +177,13 @@ native mod nat {
   fn g_idle_add(func: gpointer, data: gpointer) -> guint;
   fn g_idle_add_full(
       priority: gint, func: gpointer, data: gpointer, on_destroy: gpointer) -> guint;
+  fn g_signal_connect_data(
+      obj: gpointer,
+      name: *gchar,
+      callback: gpointer,
+      data: gpointer,
+      on_destroy: gpointer,
+      flags: gint) -> gulong;
 }
 
 mod types {

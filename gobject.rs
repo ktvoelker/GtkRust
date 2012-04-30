@@ -1,4 +1,16 @@
 
+import glib::types::*;
+
+iface object {
+  pure fn c_object() -> gpointer;
+}
+
+impl of object for raw::any_object {
+  pure fn c_object() -> gpointer {
+    ret **self;
+  }
+}
+
 mod raw {
   import glib::types::gpointer;
   resource object(p: gpointer) {
