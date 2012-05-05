@@ -3,7 +3,7 @@
        vers = "0.0.1",
        uuid = "F2398BB2-E2DF-4A6B-88E6-09F8406E64BA")];
 
-#[desc = "GTK Bindings" ];
+#[desc = "GTK Bindings"];
 #[author = "Karl Voelker"];
 #[license = "GPL"];
 #[crate_type = "lib"];
