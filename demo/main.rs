@@ -3,7 +3,7 @@ use gtk2;
 import gtk2::*;
 import gtk::window::window;
 import gtk::window::i_widget;
-import gtk::window::object;
+import gtk::window::i_object;
 import gtk::widget::widget;
 
 import io::*;

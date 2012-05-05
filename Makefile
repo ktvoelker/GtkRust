@@ -4,17 +4,17 @@ SAMPLES=demo mem
 
 .PHONY: all doc libs samples $(LIBS) $(SAMPLES) clean
 
+demo: gtk2
+	cd demo && make
+
 libs: $(LIBS)
 
-all: doc libs samples
+all: doc demo libs samples
 
 doc:
 	cd gtk2 && make doc
 
 samples: $(SAMPLES)
-
-demo: gtk2
-	cd demo && make
 
 mem:
 	cd mem && make

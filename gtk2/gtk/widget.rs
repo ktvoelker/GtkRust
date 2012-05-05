@@ -1,6 +1,7 @@
 
 import glib::types::*;
 import gobject::object;
+import gobject::i_object;
 
 enum widget = gobject::raw::any_object;
 
@@ -14,9 +15,12 @@ impl of i_widget for widget {
   }
 }
 
-impl of gobject::object for widget {
+impl of gobject::i_object for widget {
   pure fn c_object() -> gpointer {
     ret (*self).c_object();
+  }
+  fn as_object() -> object {
+    ret gobject::object(*self);
   }
 }
 

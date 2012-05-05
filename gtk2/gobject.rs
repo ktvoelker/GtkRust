@@ -1,13 +1,28 @@
 
 import glib::types::*;
 
-iface object {
+enum object = raw::any_object;
+
+iface i_object {
   pure fn c_object() -> gpointer;
+  fn as_object() -> object;
 }
 
-impl of object for raw::any_object {
+impl of i_object for object {
+  pure fn c_object() -> gpointer {
+    ret ***self;
+  }
+  fn as_object() -> object {
+    ret self;
+  }
+}
+
+impl of i_object for raw::any_object {
   pure fn c_object() -> gpointer {
     ret **self;
+  }
+  fn as_object() -> object {
+    ret object(self);
   }
 }
 

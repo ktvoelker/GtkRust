@@ -1,11 +1,15 @@
 
 import gobject::object;
+import gobject::i_object;
 
 enum window = gobject::raw::any_object;
 
-impl of gobject::object for window {
+impl of gobject::i_object for window {
   pure fn c_object() -> gpointer {
     ret (*self).c_object();
+  }
+  fn as_object() -> object {
+    ret gobject::object(*self);
   }
 }
 
