@@ -1,29 +1,38 @@
 
-LIBS=gtk2
+LIBS=gtk2 template
 SAMPLES=demo mem
 
 .PHONY: all doc libs samples $(LIBS) $(SAMPLES) clean
 
-demo: gtk2
-	cd demo && make
-
-libs: $(LIBS)
-
-all: doc demo libs samples
+all: doc libs samples
 
 doc:
 	cd gtk2 && make doc
-
-samples: $(SAMPLES)
-
-mem:
-	cd mem && make
-
-gtk2:
-	cd gtk2 && make
+	cd template && make doc
 
 clean:
 	-cd mem && make clean
 	-cd demo && make clean
 	-cd gtk2 && make clean
+	-cd template && make clean
+
+# Libraries
+
+libs: $(LIBS)
+
+gtk2:
+	cd gtk2 && make
+
+template:
+	cd template && make
+
+# Samples
+
+samples: $(SAMPLES)
+
+demo: gtk2
+	cd demo && make
+
+mem:
+	cd mem && make
 

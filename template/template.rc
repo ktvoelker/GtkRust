@@ -1,0 +1,12 @@
+
+#[link(name = "template",
+       vers = "0.0.1",
+       uuid = "8C011A2C-4ABB-40CE-B87C-6FD8172BDA47")];
+
+#[desc = "Template Engine"];
+#[author = "Karl Voelker"];
+#[license = "GPL"];
+#[crate_type = "lib"];
+
+mod template;
+
