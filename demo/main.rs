@@ -1,26 +1,32 @@
 
 use gtk2;
 import gtk2::*;
+import gtk::window::window;
+import gtk::window::i_widget;
+import gtk::window::object;
+import gtk::widget::widget;
 
 import io::*;
 
-fn main(args : [str]) {
-  io::println("Hello, world!");
+crust fn my_callback(
+    _w: glib::types::gpointer,
+    _e: glib::types::gpointer,
+    _p: glib::types::gpointer) -> glib::types::gboolean {
+  gtk::main_quit();
+  ret glib::types::gboolean::from_bool(false);
+}
+
+fn main() unsafe {
   gtk::init();
-  glib::check_version(2u32, 30u32, 2u32);
-  let x: @mut int = @mut 0;
-  glib::timeout::add(10u32, fn@(y: @mut int) -> bool {
-    println(int::to_str(*y, 10u));
-    *y += 1;
-    if (*y == 10) {
-      glib::timeout::add(10u32, fn@(y: @mut int) -> bool {
-        println(int::to_str(*y, 10u));
-        gtk::main_quit();
-        ret false;
-      }, y);
-    }
-    ret *y < 10;
-  }, x);
+  let win = gtk::window::create(gtk::window::toplevel);
+  win.set_title("Hello, world!");
+  glib::signal::connect(
+      win,
+      "delete-event",
+      unsafe::reinterpret_cast(my_callback),
+      ptr::null(),
+      glib::signal::before);
+  win.as_widget().show();
   gtk::main_loop();
 }
 

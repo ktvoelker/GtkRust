@@ -8,15 +8,15 @@
 #[license = "GPL"];
 #[crate_type = "lib"];
 
-#[path = "glib.rs"]
 mod glib;
-
-#[path = "gobject.rs"]
 mod gobject;
-
-#[path = "gdk.rs"]
-mod gdk;
-
-#[path = "gtk.rs"]
-mod gtk;
+mod gdk {
+  mod event {
+    mod button;
+  }
+}
+mod gtk {
+  mod widget;
+  mod window;
+}
 

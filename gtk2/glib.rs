@@ -134,8 +134,8 @@ mod signal {
 
   enum handler_id = gulong;
 
-  fn connect (
-      obj: gobject::object,
+  fn connect<T: gobject::object>(
+      obj: T,
       name: str,
       callback: gpointer,
       data: gpointer,
