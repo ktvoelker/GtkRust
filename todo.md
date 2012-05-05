@@ -2,11 +2,15 @@
 To Do
 =====
 
-Implement window and button widgets
+Provide a safer way to connect signals
 
-  Just enough methods to create a window with a button and connect to a signal on each
+  Take a Rust callback
 
-Make a test app that shows a button in a window and handles the click
+  This means one signal connection function per callback signature
+
+Implement a button widget
+
+  Update the demo program to put the button in the window
 
 Figure out how to generate most of the API automatically
 
