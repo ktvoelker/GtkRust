@@ -1,8 +1,8 @@
 
 RUSTC=rustc
-RUSTC_OPTS=
+RUSTC_OPTS=-L ../template
 
-.PHONY: all clean
+.PHONY: all main clean
 
 all: main
 
