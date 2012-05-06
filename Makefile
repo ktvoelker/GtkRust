@@ -1,5 +1,5 @@
 
-LIBS=gtk2 template
+LIBS=gtk2 parsec template
 SAMPLES=demo tdemo mem
 
 .PHONY: all doc libs samples $(LIBS) $(SAMPLES) clean
@@ -7,14 +7,16 @@ SAMPLES=demo tdemo mem
 all: doc libs samples
 
 doc:
-	cd gtk2 && make doc
+	cd parsec && make doc
 	cd template && make doc
+	cd gtk2 && make doc
 
 clean:
 	-cd mem && make clean
 	-cd demo && make clean
 	-cd gtk2 && make clean
 	-cd template && make clean
+	-cd parsec && make clean
 
 # Libraries
 
@@ -25,6 +27,9 @@ gtk2:
 
 template:
 	cd template && make
+
+parsec:
+	cd parsec && make
 
 # Samples
 

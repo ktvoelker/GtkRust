@@ -1,0 +1,12 @@
+
+#[link(name = "parsec",
+       vers = "0.0.1",
+       uuid = "F8E34BFD-8B2C-4D6C-8D50-3444AFEC1414")];
+
+#[desc = "Parsec"];
+#[author = "Karl Voelker"];
+#[license = "GPL"];
+#[crate_type = "lib"];
+
+mod parsec;
+
