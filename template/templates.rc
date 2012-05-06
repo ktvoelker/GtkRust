@@ -1,5 +1,5 @@
 
-#[link(name = "template",
+#[link(name = "templates",
        vers = "0.0.1",
        uuid = "8C011A2C-4ABB-40CE-B87C-6FD8172BDA47")];
 
@@ -8,5 +8,8 @@
 #[license = "GPL"];
 #[crate_type = "lib"];
 
-mod template;
+mod template {
+  mod lexer;
+  mod parser;
+}
 

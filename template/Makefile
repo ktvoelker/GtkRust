@@ -7,10 +7,10 @@ RUSTDOC_OPTS=--output-format html
 RUSTDOC_CRATE=--output-dir . --output-style doc-per-crate
 RUSTDOC_MOD=--output-dir doc --output-style doc-per-mod
 
-CRATE=template.rc
+CRATE=templates.rc
 SOURCES=$(wildcard *.rs)
 INPUTS=$(CRATE) $(SOURCES)
-CRATE_DOCS=template.html
+CRATE_DOCS=templates.html
 
 .PHONY: all doc crate-doc mod-doc clean
 
