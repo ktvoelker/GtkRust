@@ -8,5 +8,8 @@
 #[license = "GPL"];
 #[crate_type = "lib"];
 
-mod parsec;
+mod parsec {
+  mod core;
+  mod extra;
+}
 

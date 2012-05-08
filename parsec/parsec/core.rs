@@ -46,7 +46,7 @@ fn eof<T>(s: state<T>) -> option<()> {
   }
 }
 
-fn skip<T>(n: uint) -> parser<T, ()> {
+fn skip_n<T>(n: uint) -> parser<T, ()> {
   ret fn@(s: state<T>) -> option<()> {
     if (s.pos + n > s.xs.len()) {
       s.error("Tried to skip past end of input")
@@ -57,7 +57,11 @@ fn skip<T>(n: uint) -> parser<T, ()> {
   };
 }
 
-fn peek<T: copy>(n: uint) -> parser<T, [T]> {
+fn skip<T>() -> parser<T, ()> {
+  skip_n(1u)
+}
+
+fn peek_n<T: copy>(n: uint) -> parser<T, [T]> {
   ret fn@(s: state<T>) -> option<[T]> {
     if (s.pos + n > s.xs.len()) {
       s.error("Tried to look past end of input")
@@ -67,34 +71,59 @@ fn peek<T: copy>(n: uint) -> parser<T, [T]> {
   };
 }
 
-fn take<T: copy>(n: uint) -> parser<T, [T]> {
-  peek(n).andThen(skip(n).pass())
+fn peek<T: copy>() -> parser<T, T> {
+  peek_n(1u).map({ |xs| vec::head(xs) })
+}
+
+fn take_n<T: copy>(n: uint) -> parser<T, [T]> {
+  peek_n(n).andThen(pass(skip_n(n)))
+}
+
+fn take<T: copy>() -> parser<T, T> {
+  take_n(1u).map({ |xs| vec::head(xs) })
+}
+
+fn where<T: copy, U: copy>(p: fn@(U) -> bool) -> p_parser<U, T, U> {
+  ret fn@(x: U) -> parser<T, U> {
+    if (p(x)) {
+      fn@(s: state<T>) -> option<U> { s.return(x) }
+    } else {
+      fn@(s: state<T>) -> option<U> { s.error("Predicate check failed") }
+    }
+  };
+}
+
+fn ignore<T, U: copy>() -> p_parser<U, T, ()> {
+  fn@(_x: U) -> parser<T, ()> {
+    fn@(s: state<T>) -> option<()> {
+      s.return(())
+    }
+  }
+}
+
+fn pass<T: copy, U: copy>(p: parser<T, ()>) -> p_parser<U, T, U> {
+  fn@(val: U) -> parser<T, U> {
+    fn@(s: state<T>) -> option<U> {
+      p(s);
+      s.return(val)
+    }
+  }
 }
 
 impl parser<T: copy, U: copy> for parser<T, U> {
 
-  fn ignore() -> parser<T, ()> {
-    ret fn@(s: state<T>) -> option<()> {
-      s.apply(self);
-      ret s.return(());
-    };
-  }
-
-  fn pass<V: copy>() -> p_parser<V, T, V> {
-    ret fn@(val: V) -> parser<T, V> {
-      ret fn@(s: state<T>) -> option<V> {
-        s.apply(self);
-        ret s.return(val);
-      };
-    };
-  }
-
   fn andThen<V: copy>(next: p_parser<U, T, V>) -> parser<T, V> {
-    ret fn@(s: state<T>) -> option<V> {
+    fn@(s: state<T>) -> option<V> {
       s.apply(self).map_default(none, { |x|
         s.apply(next(x))
       })
-    };
+    }
+  }
+
+  fn map<V: copy>(f: fn@(x: U) -> V) -> parser<T, V> {
+    self.andThen(fn@(x: U) -> parser<T, V> {
+      fn@(s: state<T>) -> option<V> { s.return(f(x)) }
+    })
   }
 
   fn maybeTryOrElse<U: copy>(backtrack: bool, other: parser<T, U>) -> parser<T, U> {
@@ -121,7 +150,7 @@ impl parser<T: copy, U: copy> for parser<T, U> {
 
   fn tryParsePartial(xs: [T]) -> (state<T>, option<U>) {
     let s = state(@{xs: xs, mut pos: 0u, mut err: none});
-    let r = self.andThen(bind eof(_).pass())(s);
+    let r = self.andThen(pass(bind eof(_)))(s);
     ret (s, r);
   }
 
@@ -142,19 +171,12 @@ impl parser<T: copy, U: copy> for parser<T, U> {
 
 }
 
+/*
 fn never_parser<T, U>(_s: state<T>) -> option<U> { none }
 
 fn never_p_parser<P, T, U: copy>(_val: P) -> parser<T, U> { bind never_parser(_) }
 
 impl option_parser<T: copy, U: copy> for option<parser<T, U>> {
-
-  fn ignore() -> parser<T, ()> {
-    self.map_default(bind never_parser(_), { |p| p.ignore() })
-  }
-
-  fn pass<V: copy>() -> p_parser<V, T, V> {
-    self.map_default(bind never_p_parser(_), { |p| p.pass() })
-  }
 
   fn andThen<V: copy>(next: p_parser<U, T, V>) -> parser<T, V> {
     self.map_default(bind never_parser(_), { |p| p.andThen(next) })
@@ -165,4 +187,5 @@ impl option_parser<T: copy, U: copy> for option<parser<T, U>> {
   }
 
 }
+*/
 
